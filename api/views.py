@@ -21,13 +21,19 @@ class MovieViewSet(viewsets.ModelViewSet):
     ''' 
         create custom method
         1) decorator action with method
+        
     '''
     @action(detail=True, methods=['POST']) # detail=True, - one specific movie, false - all movies
     def rate_movie(self, request, pk=None):
-        response = {
-            'message': 'its working'
-        }
-        return Response(response, status=status.HTTP_200_OK)
+        if 'stars' in request.data:
+            response = {'message': 'its working'}
+            return Response(response, status=status.HTTP_200_OK)
+        else:
+            response = {
+                'message': 'you need to provide stars'
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
 
 class RatingViewSet(viewsets.ModelViewSet):
     queryset = Rating.objects.all()
