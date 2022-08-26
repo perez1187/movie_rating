@@ -1,5 +1,7 @@
+import imp
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.authentication import TokenAuthentication
 from .models import Movie, Rating
 from rest_framework.response import Response
 from .serializers import MovieSerializer, RatingSerializer
@@ -19,6 +21,7 @@ class MovieViewSet(viewsets.ModelViewSet):
     '''
     queryset = Movie.objects.all() # we can add fo example .order_by('')
     serializer_class = MovieSerializer
+    authentication_classes = (TokenAuthentication,) # thx to this we know user
 
     ''' 
         create custom method
@@ -32,8 +35,8 @@ class MovieViewSet(viewsets.ModelViewSet):
             # we have access to pk
             movie = Movie.objects.get(id=pk)
             # print('Movie title', movie.title)
-            # user = request.user
-            user = User.objects.get(id=1) # temporary static user
+            user = request.user
+            # user = User.objects.get(id=1) # temporary static user
             print('user', user)  # that will show AnonymousUser without atuhetication || user and usern.username in temporary it is the same
             stars=request.data['stars']
 
@@ -70,5 +73,6 @@ class MovieViewSet(viewsets.ModelViewSet):
 class RatingViewSet(viewsets.ModelViewSet):
     queryset = Rating.objects.all()
     serializer_class = RatingSerializer
+    authentication_classes = (TokenAuthentication,)
 
 
