@@ -4,6 +4,8 @@ from .models import Movie, Rating
 from rest_framework.response import Response
 from .serializers import MovieSerializer, RatingSerializer
 
+from django.contrib.auth.models import User
+
 class MovieViewSet(viewsets.ModelViewSet):
     '''
         A viewset that provides default `create()`, `retrieve()`, `update()`,
@@ -24,10 +26,40 @@ class MovieViewSet(viewsets.ModelViewSet):
         
     '''
     @action(detail=True, methods=['POST']) # detail=True, - one specific movie, false - all movies
-    def rate_movie(self, request, pk=None):
-        if 'stars' in request.data:
-            response = {'message': 'its working'}
-            return Response(response, status=status.HTTP_200_OK)
+    def rate_movie(self, request, pk=None): # api/movies/{id}/rate_movie/
+        if ('stars' in request.data) : # multiply conditions: and ('movie' in request.data)
+            
+            # we have access to pk
+            movie = Movie.objects.get(id=pk)
+            # print('Movie title', movie.title)
+            # user = request.user
+            user = User.objects.get(id=1) # temporary static user
+            print('user', user)  # that will show AnonymousUser without atuhetication || user and usern.username in temporary it is the same
+            stars=request.data['stars']
+
+            '''
+                api/movies/{id}/rate_movie/
+                POST method
+                if we have user and movie than update stars
+                if we dont, create new
+            '''
+
+            try:
+                rating= Rating.objects.get(user=user.id, movie=movie.id)
+                rating.stars = stars
+                rating.save()
+
+                # we added serializer (but it works without) we just add more information to response JSON(front)
+                serializer = RatingSerializer(rating, many=False)
+                response = {'message': 'Rating updated', 'result': serializer.data}
+                return Response(response, status=status.HTTP_200_OK)
+            except:
+                rating = Rating.objects.create(user=user, movie=movie, stars=stars) 
+                serializer = RatingSerializer(rating, many=False)
+                response = {'message': 'Rating created', 'result': serializer.data}
+                return Response(response, status=status.HTTP_200_OK)
+
+
         else:
             response = {
                 'message': 'you need to provide stars'
